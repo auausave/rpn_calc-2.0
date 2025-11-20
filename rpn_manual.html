@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <title>rpn_manual.nim</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🐳</text></svg>">
+  <meta content="text/html; charset=utf-8" http-equiv="content-type">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="nimib 0.3.12" name="generator">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.min.css">
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/pietroppeter/nimib/assets/atom-one-light.css'>
+    <script src="https://cdn.jsdelivr.net/gh/pietroppeter/nimib@main/assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+  <style>
+.nb-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nb-small {
+  font-size: 0.8rem;
+}
+button.nb-small {
+  float: right;
+  padding: 2px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+section#source {
+  display:none
+}
+pre > code {
+  font-size: 1.2em;
+}
+.nb-output {
+  line-height: 1.15;
+}
+figure {
+  margin: 2rem 0;
+}
+figcaption {
+  text-align: center;
+}
+  
+</style>
+  
+</head>
+<body>
+<header>
+<div class="nb-box">
+  <span><a href=".">🏡</a></span>
+  <span><code>rpn_manual.nim</code></span>
+  <span></span>
+</div>
+<hr>
+</header><main>
+<h1>RPN 计算器手册</h1>
+<p>RPN（逆波兰表示法）是一种数学表达式表示法，其中运算符位于操作数之后。</p>
+<h2>基本操作</h2>
+<p>RPN 计算器使用栈来存储操作数。以下是一些基本操作示例：</p>
+<pre><code class="nohighlight hljs nim"><span class="hljs-comment"># RPN 计算器实现</span>
+<span class="hljs-keyword">type</span>
+  <span class="hljs-type">Stack</span> = <span class="hljs-built_in">seq</span>[<span class="hljs-built_in">float</span>]
+
+<span class="hljs-keyword">proc</span> push(s: <span class="hljs-keyword">var</span> <span class="hljs-type">Stack</span>, value: <span class="hljs-built_in">float</span>) =
+  s.add(value)
+
+<span class="hljs-keyword">proc</span> pop(s: <span class="hljs-keyword">var</span> <span class="hljs-type">Stack</span>): <span class="hljs-built_in">float</span> =
+  <span class="hljs-keyword">if</span> s.len &gt; <span class="hljs-number">0</span>:
+    <span class="hljs-literal">result</span> = s[^<span class="hljs-number">1</span>]
+    s.setLen(s.len - <span class="hljs-number">1</span>)
+  <span class="hljs-keyword">else</span>:
+    <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;栈为空&quot;</span>)
+
+<span class="hljs-keyword">proc</span> evaluateRPN(expression: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">float</span> =
+  <span class="hljs-keyword">var</span> stack: <span class="hljs-type">Stack</span>
+  <span class="hljs-keyword">let</span> tokens = expression.split()
+  
+  <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens:
+    <span class="hljs-keyword">case</span> token
+    <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;+&quot;</span>:
+      <span class="hljs-keyword">let</span> b = stack.pop()
+      <span class="hljs-keyword">let</span> a = stack.pop()
+      stack.push(a + b)
+    <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;-&quot;</span>:
+      <span class="hljs-keyword">let</span> b = stack.pop()
+      <span class="hljs-keyword">let</span> a = stack.pop()
+      stack.push(a - b)
+    <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;*&quot;</span>:
+      <span class="hljs-keyword">let</span> b = stack.pop()
+      <span class="hljs-keyword">let</span> a = stack.pop()
+      stack.push(a * b)
+    <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;/&quot;</span>:
+      <span class="hljs-keyword">let</span> b = stack.pop()
+      <span class="hljs-keyword">let</span> a = stack.pop()
+      stack.push(a / b)
+    <span class="hljs-keyword">else</span>:
+      <span class="hljs-comment"># 尝试将 token 解析为数字</span>
+      <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">let</span> number = parseFloat(token)
+        stack.push(number)
+      <span class="hljs-keyword">except</span> <span class="hljs-type">ValueError</span>:
+        <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;无效的 token: &quot;</span> &amp; token)
+  
+  <span class="hljs-keyword">if</span> stack.len == <span class="hljs-number">1</span>:
+    <span class="hljs-keyword">return</span> stack.pop()
+  <span class="hljs-keyword">else</span>:
+    <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;表达式不完整&quot;</span>)</code></pre>
+<h2>使用示例</h2>
+<p>让我们使用上面实现的 RPN 计算器来计算一些表达式：</p>
+<pre><code class="nohighlight hljs nim"><span class="hljs-comment"># 示例 1: 简单的加法</span>
+<span class="hljs-keyword">let</span> expr1 = <span class="hljs-string">&quot;3 4 +&quot;</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;表达式: &quot;</span>, expr1
+<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;结果: &quot;</span>, evaluateRPN(expr1)</code></pre><pre class="nb-output">表达式: 3 4 +
+结果: 7.0</pre>
+<pre><code class="nohighlight hljs nim"><span class="hljs-comment"># 示例 2: 复杂的表达式</span>
+<span class="hljs-keyword">let</span> expr2 = <span class="hljs-string">&quot;5 1 2 + 4 * + 3 -&quot;</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;表达式: &quot;</span>, expr2
+<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;结果: &quot;</span>, evaluateRPN(expr2)</code></pre><pre class="nb-output">表达式: 5 1 2 + 4 * + 3 -
+结果: 14.0</pre>
+<h2>RPN 表达式示例</h2>
+<table>
+<thead>
+<tr>
+<th>中缀表达式</th>
+<th>RPN 表达式</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3 + 4</td>
+<td>3 4 +</td>
+<td>7</td>
+</tr>
+<tr>
+<td>(5 + (1 + 2) × 4) - 3</td>
+<td>5 1 2 + 4 * + 3 -</td>
+<td>14</td>
+</tr>
+<tr>
+<td>10 × (2 + 3)</td>
+<td>10 2 3 + *</td>
+<td>50</td>
+</tr></tbody></table>
+<h2>优势</h2>
+<ol>
+<li><strong>无需括号</strong>: RPN 不需要括号来指定运算顺序</li>
+<li><strong>易于实现</strong>: 使用栈数据结构很容易实现</li>
+<li><strong>计算效率高</strong>: 一次扫描即可完成计算</li>
+</ol>
+<h2>注意事项</h2>
+<ul>
+<li>确保表达式中有足够的操作数</li>
+<li>除法操作时注意除零错误</li>
+<li>表达式结束时栈中应该只有一个值</li>
+</ul>
+</main>
+<footer>
+<div class="nb-box">
+  <span><span class="nb-small">made with <a href="https://pietroppeter.github.io/nimib/">nimib 🐳</a></span></span>
+  <span></span>
+  <span><button class="nb-small" id="show" onclick="toggleSourceDisplay()">Show Source</button></span>
+</div>
+</footer>
+<section id="source">
+<pre><code class="nohighlight nim hljs"><span class="hljs-keyword">import</span> nimib
+<span class="hljs-keyword">import</span> strutils
+
+nbInit
+
+nbText: <span class="hljs-string">&quot;&quot;&quot;
+# RPN 计算器手册
+
+RPN（逆波兰表示法）是一种数学表达式表示法，其中运算符位于操作数之后。
+
+## 基本操作
+
+RPN 计算器使用栈来存储操作数。以下是一些基本操作示例：
+&quot;&quot;&quot;</span>
+
+nbCode:
+  <span class="hljs-comment"># RPN 计算器实现</span>
+  <span class="hljs-keyword">type</span>
+    <span class="hljs-type">Stack</span> = <span class="hljs-built_in">seq</span>[<span class="hljs-built_in">float</span>]
+  
+  <span class="hljs-keyword">proc</span> push(s: <span class="hljs-keyword">var</span> <span class="hljs-type">Stack</span>, value: <span class="hljs-built_in">float</span>) =
+    s.add(value)
+  
+  <span class="hljs-keyword">proc</span> pop(s: <span class="hljs-keyword">var</span> <span class="hljs-type">Stack</span>): <span class="hljs-built_in">float</span> =
+    <span class="hljs-keyword">if</span> s.len &gt; <span class="hljs-number">0</span>:
+      <span class="hljs-literal">result</span> = s[^<span class="hljs-number">1</span>]
+      s.setLen(s.len - <span class="hljs-number">1</span>)
+    <span class="hljs-keyword">else</span>:
+      <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;栈为空&quot;</span>)
+
+  <span class="hljs-keyword">proc</span> evaluateRPN(expression: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">float</span> =
+    <span class="hljs-keyword">var</span> stack: <span class="hljs-type">Stack</span>
+    <span class="hljs-keyword">let</span> tokens = expression.split()
+    
+    <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens:
+      <span class="hljs-keyword">case</span> token
+      <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;+&quot;</span>:
+        <span class="hljs-keyword">let</span> b = stack.pop()
+        <span class="hljs-keyword">let</span> a = stack.pop()
+        stack.push(a + b)
+      <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;-&quot;</span>:
+        <span class="hljs-keyword">let</span> b = stack.pop()
+        <span class="hljs-keyword">let</span> a = stack.pop()
+        stack.push(a - b)
+      <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;*&quot;</span>:
+        <span class="hljs-keyword">let</span> b = stack.pop()
+        <span class="hljs-keyword">let</span> a = stack.pop()
+        stack.push(a * b)
+      <span class="hljs-keyword">of</span> <span class="hljs-string">&quot;/&quot;</span>:
+        <span class="hljs-keyword">let</span> b = stack.pop()
+        <span class="hljs-keyword">let</span> a = stack.pop()
+        stack.push(a / b)
+      <span class="hljs-keyword">else</span>:
+        <span class="hljs-comment"># 尝试将 token 解析为数字</span>
+        <span class="hljs-keyword">try</span>:
+          <span class="hljs-keyword">let</span> number = parseFloat(token)
+          stack.push(number)
+        <span class="hljs-keyword">except</span> <span class="hljs-type">ValueError</span>:
+          <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;无效的 token: &quot;</span> &amp; token)
+    
+    <span class="hljs-keyword">if</span> stack.len == <span class="hljs-number">1</span>:
+      <span class="hljs-keyword">return</span> stack.pop()
+    <span class="hljs-keyword">else</span>:
+      <span class="hljs-keyword">raise</span> newException(<span class="hljs-type">ValueError</span>, <span class="hljs-string">&quot;表达式不完整&quot;</span>)
+
+nbText: <span class="hljs-string">&quot;&quot;&quot;
+## 使用示例
+
+让我们使用上面实现的 RPN 计算器来计算一些表达式：
+&quot;&quot;&quot;</span>
+
+nbCode:
+  <span class="hljs-comment"># 示例 1: 简单的加法</span>
+  <span class="hljs-keyword">let</span> expr1 = <span class="hljs-string">&quot;3 4 +&quot;</span>
+  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;表达式: &quot;</span>, expr1
+  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;结果: &quot;</span>, evaluateRPN(expr1)
+
+nbCode:
+  <span class="hljs-comment"># 示例 2: 复杂的表达式</span>
+  <span class="hljs-keyword">let</span> expr2 = <span class="hljs-string">&quot;5 1 2 + 4 * + 3 -&quot;</span>
+  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;表达式: &quot;</span>, expr2
+  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;结果: &quot;</span>, evaluateRPN(expr2)
+
+nbText: <span class="hljs-string">&quot;&quot;&quot;
+## RPN 表达式示例
+
+| 中缀表达式 | RPN 表达式 | 结果 |
+|-----------|------------|------|
+| 3 + 4 | 3 4 + | 7 |
+| (5 + (1 + 2) × 4) - 3 | 5 1 2 + 4 * + 3 - | 14 |
+| 10 × (2 + 3) | 10 2 3 + * | 50 |
+
+## 优势
+
+1. **无需括号**: RPN 不需要括号来指定运算顺序
+2. **易于实现**: 使用栈数据结构很容易实现
+3. **计算效率高**: 一次扫描即可完成计算
+
+## 注意事项
+
+- 确保表达式中有足够的操作数
+- 除法操作时注意除零错误
+- 表达式结束时栈中应该只有一个值
+&quot;&quot;&quot;</span>
+
+nbSave
+
+</code></pre>
+</section><script>
+function toggleSourceDisplay() {
+  var btn = document.getElementById("show")
+  var source = document.getElementById("source");
+  if (btn.innerHTML=="Show Source") {
+    btn.innerHTML = "Hide Source";
+    source.style.display = "block";
+  } else {
+    btn.innerHTML = "Show Source";
+    source.style.display = "none";
+  }
+}
+</script></body>
+</html>
